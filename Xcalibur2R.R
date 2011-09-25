@@ -15,70 +15,58 @@ library(gdata)
 
 xcaliburxls2R <- function(dir)
 {
-
 #list all files in the chosen directory
 files<-list.files(path=dir)
-
 #select only files with .XLS or .xls extension
-files<-files[grepl( ".XLS", files)|grepl( ".xls", files)]
-
+files<-files[ grepl(".XLS", files)==T | grepl(".xls", files)==T]
 #for each file...
 for (i in 1:length(files))
-{
-
-  #count the number of sheets in the file
-  sheetnames<-sheetNames(files[i], perl=perl)
-
-  #for each sheet...  
-  for (j in 1:length(sheetnames))
   {
+  
+    #count the number of sheets in the file
+    sheetnames<-sheetNames(files[i], perl=perl)
+  
+    #for each sheet...  
+    for (j in (1:length(sheetnames)))
+    {
+      if(is.na(sheetnames[j])!=T&sheetnames[j]!="Component")
+      {  
+      #read the sheet
+        tmp<-data.frame(read.xls(files[i], sheet=j, perl=perl))        
+      #read out the substance's name
+        tmp.name<-tmp[1,1]
+      #set limits for data in spreadsheet
+        lim<-4:nrow(tmp)-3
+      #read names of samples
+        samplenames<-tmp[lim,1]
+      #read peak areas 
+        tmp.area<-data.frame(tmp[lim,5])
+      #set sample names as rownames and the substance's name as colname
+        rownames(tmp.area)<-samplenames
+        colnames(tmp.area)<-tmp.name
+      #repeat the same with retention times
+        tmp.rt<-data.frame(tmp[lim,15])
+        rownames(tmp.rt)<-samplenames
+        colnames(tmp.rt)<-tmp.name
+      #if this is the first run, create new variables
+        if(i==1 & j==1)
+        {
+          area<-tmp.area
+          rt<-tmp.rt
+        } else
+        {
+          area<-cbind(area, tmp.area)
+          rt<-cbind(rt, tmp.rt)
 
-    #read the sheet
-    tmp<-data.frame(read.xls(files[i], sheet=j, perl=perl))
-    
-    #read out the substance's name
-    tmp.name<-tmp[1,1]
-    
-    #set limits for data in spreadsheet
-    lim<-4:nrow(tmp)-3
-    
-    #read names of samples
-    samplenames<-tmp[lim,1]
-    
-    #read peak areas 
-    tmp.area<-data.frame(tmp[4:lim,5])
-    
-    #set sample names as rownames and the substance's name as colname
-    rownames(tmp.area)<-samplenames
-    colnames(tmp.area)<-tmp.name
-    
-    #repeat the same with retention times
-    tmp.rt<-data.frame(tmp[4:lim,15])
-    rownames(tmp.rt)<-samplenames
-    colnames(tmp.rt)<-tmp.name
-    
-    #if this is the first run, create new variables
-    if(i==1 & j==1)
-    {
-      area<-tmp.area
-      rt<-tmp.rt
-    } else
-    {
-#to be implemented: check if sample names are identical. if not, create a list of dataframes with identical sample names.
-      
-      #check if sample names are identical
-#      if (is.list(area)==F) {
-#        if (colnames(area)==colnames(tmp.area))
-#          area<-cbind(area, tmp.area)
-#      } #else {
-#        if (length(which(colnames(area)==colnames(tmp.area))))
-#      }
-      
-      #until then we just run...
-      area<-cbind(area, tmp.area)
-      rt<-cbind(rt, tmp.rt)
+#          area<-merge(area, tmp.area, by="row.names")
+#          rt<-merge(rt, tmp.rt, by="row.names")
+        }
+      print(paste(files[i], " (", i, "/", length(files), "), sheet (", j, "/", length(sheetnames),") imported"), sep="")
+      }  
     }
-  }  
+  }
+return(list(data.frame(rt), data.frame(area)))
 }
-return(list(rt, area))
-}
+tmp<-xcaliburxls2R(".")
+write.csv(tmp[1], "peakareas.csv")
+write.csv(tmp[2], "retentiontimes.csv")
