@@ -1,0 +1,15 @@
+XCaliburXLS2R script
+
+This script defines the function xcaliburxls2R, which reads xcalibur excel reports into R and returns a list of two data frames with peak areas and retention times for all peaks. all .xls and .XLS files in a given directory are analyzed.
+
+example:
+xcaliburxls2R("pathtomyfiles")
+
+setup:
+the package "gdata" is required for this script.
+
+read.xls needs a running perl installation. this should be included in most linux distributions, but needs to be installed manually under windows. perl can be found
+
+if not found automatically, set your path to perl at the beginning of the script.
+
+written by Lukas Kohl, Sep 2011
