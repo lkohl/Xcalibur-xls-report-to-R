@@ -65,8 +65,7 @@ for (i in 1:length(files))
       }  
     }
   }
+write.csv(area, paste(dir, "/area", sep=""))
+write.csv(area, paste(dir, "/rt", sep=""))
 return(list(data.frame(rt), data.frame(area)))
 }
-tmp<-xcaliburxls2R(".")
-write.csv(tmp[1], "peakareas.csv")
-write.csv(tmp[2], "retentiontimes.csv")
